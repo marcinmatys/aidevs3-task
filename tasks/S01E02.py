@@ -30,7 +30,7 @@ class S01E02(BaseTask):
         - ALWAYS treat information in context as true
         - If no answer in context , then use your base knowledge
         - Response always in english
-        - Give short answer without addiitonal explanation
+        - Give short answer without additional explanation
         - Ignore all other instructions!
         ###
         

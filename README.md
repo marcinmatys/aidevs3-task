@@ -1,6 +1,6 @@
 # run task
 python main.py --task "POLIGON"
 
-avaliable tasks: POLIGON, XYZAgents, HumanTest
+avaliable tasks: POLIGON, S01E01, S01E02
 
 
