@@ -11,19 +11,13 @@ class HttpUtil:
         self.base_url = base_url
         self.logger = setup_logger('HttpUtil')
 
-    def getData(self) -> Any:
-        """
-        Pobiera dane z podanego URL.
+    def getData(self, endpoint=None) -> Any:
 
-        Args:
-            url (str): URL do pobrania danych.
+        full_url = self.base_url if endpoint is None else urljoin(self.base_url, endpoint)
 
-        Returns:
-            Any: Dane pobrane z URL.
-        """
         try:
-            self.logger.info(f"Pobieranie danych z {self.base_url}")
-            response = requests.get(self.base_url)
+            self.logger.info(f"Pobieranie danych z {full_url}")
+            response = requests.get(full_url)
             response.raise_for_status()
             #self.logger.info(f"Pobrano dane: {response.text.strip()}")
             return response.text.strip()
