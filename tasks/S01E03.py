@@ -27,6 +27,19 @@ class S01E03(BaseTask):
 
         self.logger.info(f"questions \n {questions}")
 
+        prompt = self.prepare_prompt(questions)
+
+        answers = OpenAIService().get_completion(prompt=prompt, response_format="json_object")
+        self.logger.info(f"answers \n {answers}")
+
+        answers_json = json.loads(answers)
+        processor.update_answers(answers_json["result"])
+
+        input_json["apikey"] = api_key
+
+        self.verify(input_json,"/report", False)
+
+    def prepare_prompt(self, questions):
         prompt = f"""
         Fill answers(a) for questions(q) in input json and return this json in format:
         {{"result": [{{"q": "question', "a": "answer"}}]}}
@@ -43,16 +56,7 @@ class S01E03(BaseTask):
         ###
         """
         self.logger.info(f"Prompt \n {prompt}")
-
-        answers = OpenAIService().get_completion(prompt=prompt, response_format="json_object")
-        self.logger.info(f"answers \n {answers}")
-
-        answers_json = json.loads(answers)
-        modified_json = processor.update_answers(answers_json["result"])
-
-        modified_json["apikey"] = api_key
-
-        self.verify(modified_json,"/report", False)
+        return prompt
 
 
 class JsonProcessor:
@@ -86,7 +90,6 @@ class JsonProcessor:
             if 'test' in item and item['test']['q'] in answer_map:
                 item['test']['a'] = answer_map[item['test']['q']]
 
-        return self.input_json
 
     def correct_calculations(self):
         for item in self.test_data:
