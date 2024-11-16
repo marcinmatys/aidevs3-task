@@ -22,6 +22,8 @@ class S02E01(BaseTask):
 
         context = ""
         for filename in os.listdir(resource_dir):
+            if not filename.endswith(".m4a"):  # Skip files that are not .m4a
+                continue
             file_path = os.path.join(resource_dir, filename)  # Construct full file path
             file= open(file_path, "rb")
             text = OpenaiASRService().get_transcription(file)
@@ -50,6 +52,7 @@ class S02E01(BaseTask):
         """
         self.logger.info(f"prompt: {prompt}")
 
+        #works also on model="gpt-4o-mini"
         response = OpenAIService().get_completion(prompt, response_format="json_object")
         self.logger.info(f"response: {response}")
 
