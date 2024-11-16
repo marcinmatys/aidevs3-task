@@ -2,16 +2,20 @@ import requests
 import logging
 from urllib.parse import urljoin
 from typing import Dict, Any
+from enum import Enum
 
 from common.logger_config import setup_logger
 
+class ResponseType(Enum):
+    TEXT = 1
+    CONTENT = 2
 
 class HttpUtil:
     def __init__(self, base_url):
         self.base_url = base_url
         self.logger = setup_logger('HttpUtil')
 
-    def getData(self, endpoint=None) -> Any:
+    def getData(self, endpoint=None, response_type : ResponseType = ResponseType.TEXT) -> Any:
 
         full_url = self.base_url if endpoint is None else urljoin(self.base_url, endpoint)
 
@@ -19,8 +23,7 @@ class HttpUtil:
             self.logger.info(f"Pobieranie danych z {full_url}")
             response = requests.get(full_url)
             response.raise_for_status()
-            #self.logger.info(f"Pobrano dane: {response.text.strip()}")
-            return response.text.strip()
+            return response.text.strip() if response_type == ResponseType.TEXT else response.content
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Błąd podczas pobierania danych: {str(e)}")
             raise
@@ -58,4 +61,5 @@ class HttpUtil:
         except requests.exceptions.RequestException as e:
             error_msg = f"Błąd podczas wysyłania danych: {str(e)}"
             self.logger.error(error_msg)
-            return response.content
+            self.logger.error(f"error content: {response.content}")
+            raise

@@ -4,11 +4,14 @@ from common.logger_config import setup_logger
 
 logger = setup_logger('Main')
 
-def main(task_name: str):
+def main(task_name: str, dict: str = None):
 
     try:
         # Dynamically import the task module
-        task_module = import_module(f"tasks.{task_name}")
+        if dict is None:
+            task_module = import_module(f"tasks.{task_name}")
+        else:
+            task_module = import_module(f"tasks.{dict}.{task_name}")
 
         # Dynamically get the task class from the module
         task_class = getattr(task_module, task_name)
@@ -25,7 +28,8 @@ def main(task_name: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run a specific task.')
+    parser.add_argument('--dict', type=str, help='The name of the task dictionary')
     parser.add_argument('--task', type=str, help='The name of the task class to run')
     args = parser.parse_args()
 
-    main(args.task)
+    main(args.task, args.dict)
