@@ -17,9 +17,11 @@ class S02E02(BaseTask):
         self.logger.info(f"response: {response}")
 
     def get_prompt(self):
+
         # Add in Rules: - Think out loud(in polish) about your task in the "_thinking" field
         # and json format {{"_thinking":"", city:"city name"}}
         # if you want to see model reasoning
+
         prompt = f"""
         Your task is to find Poland city name based on provided images
         
