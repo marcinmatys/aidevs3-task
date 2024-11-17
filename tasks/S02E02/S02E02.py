@@ -15,10 +15,15 @@ class S02E02(BaseTask):
 
         images = []
         for filename in os.listdir(resource_dir):
+            if not filename.endswith(".png"):  # Skip files that are not .m4a
+                continue
             file_path = os.path.join(resource_dir, filename)  # Construct full file path
             image_base64  = encode_image(file_path)
             images.append({"base64":image_base64})
 
+        #Add in Rules: - Think out loud(in polish) about your task in the "_thinking" field
+        # and json format {{"_thinking":"", city:"city name"}}
+        # if you want to see model reasoning
         prompt = f"""
         Your task is to find Poland city name based on provided images
         
