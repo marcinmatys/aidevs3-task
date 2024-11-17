@@ -10,7 +10,7 @@ class OpenAIService(CompletionService):
         api_key = api_key or os.getenv('OPENAI_API_KEY')
         self.client = openai.OpenAI(api_key=api_key)
 
-    def get_completion(self, prompt: str, model: str = "gpt-4o", temperature: int = 1, response_format: str = "text") -> str:
+    def get_completion(self, prompt: str, model: str = "gpt-4o", temperature: float = 1, response_format: str = "text") -> str:
         messages = [{"role": "system", "content": prompt}]
         response = self.client.chat.completions.create(
             model=model,
