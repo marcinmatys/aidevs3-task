@@ -31,15 +31,19 @@ class ZipUtil:
 
         with ZipFile(zip_data) as zip_file:
             for file_info in zip_file.filelist:
-                if file_info.file_size > 0:  # Skip directories
-                    self.logger.info(f"Extracting {file_info.filename}")
-                    try:
-                        extracted_files[file_info.filename] = zip_file.read(
-                            file_info.filename,
-                            pwd=password.encode() if password else None
-                        )
-                    except Exception as e:
-                        self.logger.error(f"Failed to extract {file_info.filename}: {str(e)}")
-                        raise
+
+                # Skip files in subdirectories if requested
+                if '/' in file_info.filename:
+                    continue
+
+                self.logger.info(f"Extracting {file_info.filename}")
+                try:
+                    extracted_files[file_info.filename] = zip_file.read(
+                        file_info.filename,
+                        pwd=password.encode() if password else None
+                    )
+                except Exception as e:
+                    self.logger.error(f"Failed to extract {file_info.filename}: {str(e)}")
+                    raise
 
         return extracted_files
