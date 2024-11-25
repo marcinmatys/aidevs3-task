@@ -36,7 +36,7 @@ class S02E05_V2(BaseTask):
         prompt = self.get_main_prompt(publication)
 
         try:
-            relevant_content = OpenAIService().get_completion(prompt, response_format="json_object", temperature=0.6)
+            relevant_content = OpenAIService().get_completion(prompt, response_format="json_object", temperature=0.8)
             relevant_content_json = json.loads(relevant_content)
             pretty_json = json.dumps(relevant_content_json, indent=4, ensure_ascii=False)
             self.logger.info(f"relevant_content: {pretty_json}")
@@ -126,9 +126,9 @@ class S02E05_V2(BaseTask):
 
     def get_better_answer(self, answer, better_answer, question):
         prompt = f"""
-            Your task is to find better answer for question.
-            Return the better answer from two offers answer1 and answer2.
-            Return only answer.
+            Your task is to find better answer for question from two offers answer1 and answer2.
+            Choose Answer that is more specific.
+            Return only selected answer.
             
             question: 
             {self.questions[question['questionId']]}
@@ -185,12 +185,11 @@ class S02E05_V2(BaseTask):
             question: 
             {self.questions[question['questionId']]}
             
-            context
-            ###
-            {question['text']}\n
-            {question['text_keywords']}\n
-            image title: {question['url-descr']}
-            ###
+            image title: 
+            {question['url-descr']}
+            
+            The best, most probably answer is
+   
             """
         self.logger.info(f"image answer prompt: {prompt}")
         response = OpenAIVService().get_completion(prompt, [{"base64": image_base64}])
