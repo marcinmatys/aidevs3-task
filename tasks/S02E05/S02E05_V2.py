@@ -10,6 +10,8 @@ from asrService.openaiAsrService import OpenaiASRService
 from common.zipUtil import ZipUtil
 from common.HttpUtil import HttpUtil, ResponseType
 import base64
+import re
+import traceback
 
 from visionService.openaiVService import OpenAIVService
 
@@ -18,7 +20,7 @@ base_url = os.getenv('CENTRALA_BASE_URL')
 api_key = os.getenv('API_KEY')
 
 
-class S02E05(BaseTask):
+class S02E05_V2(BaseTask):
 
     def __init__(self):
         super().__init__(base_url,"arxiv")
@@ -34,69 +36,81 @@ class S02E05(BaseTask):
         prompt = self.get_main_prompt(publication)
 
         try:
-            relevant_content = OpenAIService().get_completion(prompt, response_format="json_object", temperature=1)
+            relevant_content = OpenAIService().get_completion(prompt, response_format="json_object", temperature=0.6)
             relevant_content_json = json.loads(relevant_content)
             pretty_json = json.dumps(relevant_content_json, indent=4, ensure_ascii=False)
             self.logger.info(f"relevant_content: {pretty_json}")
+
+            final_answer = {}
+            for question in relevant_content_json['result']:
+
+                if question['link']:
+                    link_descr, link_url = self.extract_link_details(question['link'])
+                    question['url'] = link_url
+                    question['url-descr'] = link_descr
+                else:
+                    question['url']=""
+                    question['url-descr']=""
+
+                answer = ""
+                if question['answer']:
+                    answer = question['answer']
+
+                better_answer = ""
+                if question['url'] and question['url'].endswith(".png"):
+                    better_answer = self.find_answer_from_image(question)
+                elif question['url'] and question['url'].endswith(".mp3"):
+                    better_answer = self.find_answer_from_audio(question)
+
+                if better_answer:
+                    answer = self.get_better_answer(answer, better_answer, question)
+
+                final_answer[question['questionId']] = answer
+
+            self.logger.info(f"final_answer: {final_answer}")
+
+            self.verify(final_answer, "/report")
+
         except Exception as e:
             print(f"An error occurred: {e}")
-            raise
-
-        final_answer = {}
-        for question in relevant_content_json['result']:
-            answer = ""
-            if question['answer']:
-                answer = question['answer']
-
-            better_answer = ""
-            if question['url'] and question['url'].endswith(".png"):
-                better_answer = self.find_answer_from_image(question)
-            elif question['url'] and question['url'].endswith(".mp3"):
-                better_answer = self.find_answer_from_audio(question)
-
-            if better_answer:
-                answer = self.get_better_answer(answer, better_answer, question)
-
-            final_answer[question['questionId']] = answer
-
-        self.logger.info(f"final_answer: {final_answer}")
-
-        self.verify(final_answer, "/report")
+            traceback.print_exc()
 
     def get_main_prompt(self, publication):
         prompt = f"""
         You have provided fictitious publication in markdown format and questions (both in polish).
-        Your task is to find answer or relevant text/url, which can help answer specific questions,
+        Your task is to find answer or relevant text/link, which can help answer specific questions,
         based only on provided publication.
        
         <rules>
-        - Relevant url could be image url or audio url (in format like i/name.png or i/name.mp3)
-        - Relevant text/url may be scattered throughout whole publication
+        - Relevant link could be image link or audio link
+        - ALWAYS use whole markdown link
+        - Relevant text may be scattered throughout whole publication
         - COMBINING sentences or phrases in relevant text is allowed
         - ADD to text field EVERY publication fragment that could help in response to question
-        - ALWAYS ADD markdown link text to related text field ([link text](i/name.png))
         - Information needed for questions could be included in attached image or audio 
         - FILL keywords (important names, phrases) based on text in text_keywords field
-        - Find urls based on text and text_keywords
-        - UNDER NO CIRCUMSTANCES use same url for different questions
-        - Search answer in whole publication and WHEN no clear answer, try to GUESS.
+        - Find links based on text and text_keywords
+        - OMIT link in text field
+        - UNDER NO CIRCUMSTANCES use same link for different questions
+        - Search MOST LIKELY answer in whole publication
+        - Answer the question exactly as asked, stay on topic
         - WHEN answer for question NOT EXISTS, leave answer field EMPTY
-        - WHEN answer is empty, it is MANDATORY to FIND url.
+        - WHEN answer is empty, it is MANDATORY to FIND link.
     
         </rules>
         
         <response-format>
         Return relevant elements in json format 
         {{"result":[{{"questionId":"question id","answer":"one sentence answer", "text":"relevant text",
-         "text_keywords":"list of keywords","url":"relevant url "}}]}}
+         "text_keywords":"list of keywords","link":"relevant link or empty string"}}]}}
         </response-format>
         
         <steps>
         - Read whole publication and questions carefully 
         - Answer questions if possible
-        - Find relevant text/url for each question
-        - Verify that selected urls are most appropriate for the questions
-        - Verify not repeating url across questions
+        - Find relevant text/link for each question
+        - Verify that selected links are most appropriate for specific questions
+        - Verify not repeating link across questions
         </steps>
         
         <questions>
@@ -165,14 +179,18 @@ class S02E05(BaseTask):
         image_base64 = base64.b64encode(image.read()).decode('utf-8')
 
         prompt = f"""
-            Your task is to find short answer the question based on provided image and context information
+            Your task is to provide a concise answer to the question based on GIVEN IMAGE and image title.
+            NEVER repeat question in answer.
             
             question: 
             {self.questions[question['questionId']]}
             
-            context: 
+            context
+            ###
             {question['text']}\n
-            {question['text_keywords']}
+            {question['text_keywords']}\n
+            image title: {question['url-descr']}
+            ###
             """
         self.logger.info(f"image answer prompt: {prompt}")
         response = OpenAIVService().get_completion(prompt, [{"base64": image_base64}])
@@ -224,3 +242,22 @@ class S02E05(BaseTask):
             questions_map[identifier] = question
 
         return questions_map
+
+    def extract_link_details(self,markdown_link):
+        # Regular expression to match markdown link syntax
+        link_pattern = r'\[(.*?)\]\((.*?)\)'  # Matches standard link format
+        image_pattern = r'!\[(.*?)\]\((.*?)\)'  # Matches image link format
+
+        match_link = re.search(link_pattern, markdown_link)
+        match_image = re.search(image_pattern, markdown_link)
+
+        if match_link:
+            link_text = match_link.group(1)  # The text inside the square brackets
+            url = match_link.group(2)         # The URL inside the parentheses
+            return link_text, url
+        elif match_image:
+            alt_text = match_image.group(1)   # The alt text inside the square brackets
+            url = match_image.group(2)         # The URL inside the parentheses
+            return alt_text, url
+        else:
+            return markdown_link, None  # Return the original input and None if no match is found

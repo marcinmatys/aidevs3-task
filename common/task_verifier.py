@@ -54,7 +54,7 @@ class TaskVerifier:
             error_msg = f"Błąd podczas wysyłania żądania: {str(e)}"
             self.logger.error(error_msg)
             self.logger.error(f"error content: {response.content}")
-            raise
+            #raise
         except ValueError as e:
             error_msg = f"Błąd podczas parsowania odpowiedzi: {str(e)}"
             self.logger.error(error_msg)
