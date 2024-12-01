@@ -34,21 +34,7 @@ class S03E01(BaseTask):
             files_keywords = self.get_reports_keywords(files)
             self.logger.info(f"files_keywords: {files_keywords}")
 
-            for report_name in files_keywords:
-                name = files_keywords[report_name].split(",")[0]
-                name = name.lower()
-                self.logger.info(f"name: {name}")
-
-                if not name in self.persons:
-                    continue
-
-                person_info = self.persons[name]
-
-                if person_info:
-                    self.logger.info(f"person_info founded for: {name}")
-                    person_keywords = self.get_keywords(person_info)
-                    self.logger.info(f"person_keywords: {person_keywords}")
-                    files_keywords[report_name] = files_keywords[report_name] + ", " + person_keywords
+            self.fill_keywords_from_person_info(files_keywords)
 
             self.verify(files_keywords, "/report")
 
@@ -56,7 +42,24 @@ class S03E01(BaseTask):
             print(f"An error occurred: {e}")
             traceback.print_exc()
 
-    @persistent_cache
+    def fill_keywords_from_person_info(self, files_keywords):
+        for report_name in files_keywords:
+            name = files_keywords[report_name].split(",")[0]
+            name = name.lower()
+            self.logger.info(f"name: {name}")
+
+            if name not in self.persons:
+                continue
+
+            person_info = self.persons[name]
+
+            if person_info:
+                self.logger.info(f"person_info founded for: {name}")
+                person_keywords = self.get_person_keywords(person_info)
+                self.logger.info(f"person_keywords: {person_keywords}")
+                files_keywords[report_name] = files_keywords[report_name] + ", " + person_keywords
+
+    @persistent_cache(__file__)
     def get_reports_keywords(self, files) -> Dict[str,str]:
         result = {}
         for file_name, content in files.items():
@@ -89,7 +92,7 @@ class S03E01(BaseTask):
 
         return result
 
-    def get_keywords(self, content):
+    def get_person_keywords(self, content):
         prompt = f"""
             Your task is to find main keywords in below context.
             Return only keywords (in polish) separated with commas without any additional formating.
@@ -106,23 +109,8 @@ class S03E01(BaseTask):
         keywords = OpenAIService().get_completion(prompt)
         return keywords
 
-    def get_persons_info (self, files) -> Dict[str,str]:
-
-        script_dir = os.path.dirname(__file__)  # Directory of the script
-        resource_dir = os.path.join(script_dir, 'resources')
-        file_path = os.path.join(resource_dir, "persons.json")
-
-        if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8") as file:
-                result = json.load(file)
-        else:
-            self.logger.info(f"File '{file_path}' does not exist.")
-            result = self.prepare_persons_info(files)
-            with open(file_path, "w", encoding="utf-8") as file:
-                json.dump(result, file, indent=4, ensure_ascii=False)
-        return result
-
-    def prepare_persons_info(self, files) -> Dict[str,str] :
+    @persistent_cache(__file__)
+    def get_persons_info(self, files) -> Dict[str,str] :
 
         result = {}
         for file_name, content in files.items():
