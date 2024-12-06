@@ -7,7 +7,7 @@ class ZipUtil:
     def __init__(self):
         self.logger = setup_logger('ZipUtil')
 
-    def extract_to_memory(self, zip_data: Union[BytesIO, bytes], ) -> Dict[str, bytes]:
+    def extract_to_memory(self, zip_data: Union[BytesIO, bytes], password: Optional[str] = None) -> Dict[str, bytes]:
         """
         Extract ZIP contents to memory
 
@@ -39,7 +39,8 @@ class ZipUtil:
                 self.logger.info(f"Extracting {file_info.filename}")
                 try:
                     extracted_files[file_info.filename] = zip_file.read(
-                        file_info.filename
+                        file_info.filename,
+                        pwd=password.encode() if password else None
                     )
                 except Exception as e:
                     self.logger.error(f"Failed to extract {file_info.filename}: {str(e)}")
