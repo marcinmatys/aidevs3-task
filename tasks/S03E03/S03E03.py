@@ -1,6 +1,6 @@
 from common.HttpUtil import HttpUtil
 from llmService.openaiService import OpenAIService
-from .base_task import BaseTask
+from tasks.base_task import BaseTask
 from dotenv import load_dotenv
 import os
 import json
