@@ -10,6 +10,7 @@ from common.HttpUtil import HttpUtil, ResponseType
 import io
 import base64
 from visionService.openaiVService import OpenAIVService
+from common.cache import persistent_cache
 
 load_dotenv()
 base_url = os.getenv('CENTRALA_BASE_URL')
@@ -32,7 +33,7 @@ class S04E01(BaseTask):
 
             image_urls = self.get_imageurls()
 
-            image_functions = self.get_image_functions(image_urls, self.available_functions)
+            image_functions = self.get_image_functions(image_urls)
 
             improved_images = self.get_improved_images(image_functions)
 
@@ -46,14 +47,27 @@ class S04E01(BaseTask):
                 final_images.append({"base64":image_base64})
 
             prompt = f"""
-            Your task is to prepare detail description of woman based on provided images
-            Pay attention to the distinguishing features and appearance.
+            Your task is to prepare detail description of one woman on provided images.
+            Focus on distinguishing features and their location, overall appearance, hair color, style and length.
+            
+            Response in json format {{"_thinking": "", "description":"detail description}}
+            Think out loud about your task in "_thinking" field
+            
+            Steps:
+            - Identify one woman on all images
+            - skip the image without this woman
+            - Prepare and return description in polish language
             """
 
-            description = OpenAIVService().get_completion(prompt, final_images)
-            self.logger.info(f"Barbara description:  {description}")
+            #prompt = f"""
+            #Opisz główną kobietę ze zdjęcia. Uwzględnij: kolor włosów, oczu, karnację i charakterystyczne cechy wyglądu.
+            #"""
 
-            self.verify(description,"/report")
+            response = OpenAIVService().get_completion(prompt, final_images, response_format="json_object")
+            response_json = json.loads(response)
+            self.logger.info(f"response_json:  {response_json}")
+
+            self.verify(response_json['description'],"/report")
 
             # dla każdego obrazu, zdecyduj jaką akcję wykonać
             # wykonaj akcję i pobierz zmienione zdjęcie
@@ -64,6 +78,7 @@ class S04E01(BaseTask):
             print(f"An error occurred: {e}")
             traceback.print_exc()
 
+    @persistent_cache(__file__)
     def get_improved_images(self, image_functions):
         improved_images = []
         for image_function in image_functions:
@@ -95,12 +110,14 @@ class S04E01(BaseTask):
         self.logger.info(f"improved_images:  {improved_images}")
         return improved_images
 
-    def get_image_functions(self, image_urls, available_functions):
+    @persistent_cache(__file__)
+    def get_image_functions(self, image_urls):
         image_functions = []
 
         available_functions_str = "\n".join(
             f"{item['function']} - {item['description']}" for item in self.available_functions
         )
+        self.logger.info(f"available_functions_str:  {available_functions_str}")
 
         for image_url in image_urls:
             http_util = HttpUtil(base_url)
@@ -114,10 +131,8 @@ class S04E01(BaseTask):
                 We need improve image to find woman description. 
                 
                 Available functions:
-                REPAIR - fixing a photo with noise/glitches
-                DARKEN - brightening a photo
-                BRIGHTEN - darkening a photo
-
+                {available_functions_str}
+                
                 Response in json format {{"function":"selected function name REPAIR|DARKEN|BRIGHTEN"}}
                 
                 Think it over carefully and find best function.
@@ -132,6 +147,7 @@ class S04E01(BaseTask):
         self.logger.info(f"image_functions:  {image_functions}")
         return image_functions
 
+    @persistent_cache(__file__)
     def get_imageurls(self):
 
         http_util = HttpUtil(base_url)
