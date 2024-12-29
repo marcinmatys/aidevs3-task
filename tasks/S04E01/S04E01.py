@@ -37,16 +37,25 @@ class S04E01(BaseTask):
 
             improved_images = self.get_improved_images(image_functions)
 
-            final_images = []
-            for improved_image in improved_images:
-                http_util = HttpUtil(base_url)
-                content = http_util.getData(f"dane/barbara/{improved_image}", ResponseType.CONTENT)
+            description = self.get_description(improved_images)
 
-                image = io.BytesIO(content)
-                image_base64 = base64.b64encode(image.read()).decode('utf-8')
-                final_images.append({"base64":image_base64})
+            self.verify(description,"/report")
 
-            prompt = f"""
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            traceback.print_exc()
+
+    def get_description(self, improved_images):
+        final_images = []
+        for improved_image in improved_images:
+            http_util = HttpUtil(base_url)
+            content = http_util.getData(f"dane/barbara/{improved_image}", ResponseType.CONTENT)
+
+            image = io.BytesIO(content)
+            image_base64 = base64.b64encode(image.read()).decode('utf-8')
+            final_images.append({"base64": image_base64})
+        prompt = f"""
             Your task is to prepare detail description of one woman on provided images.
             Focus on distinguishing features and their location, overall appearance, hair color, style and length.
             
@@ -58,25 +67,11 @@ class S04E01(BaseTask):
             - skip the image without this woman
             - Prepare and return description in polish language
             """
+        response = OpenAIVService().get_completion(prompt, final_images, response_format="json_object")
+        response_json = json.loads(response)
+        self.logger.info(f"response_json:  {response_json}")
 
-            #prompt = f"""
-            #Opisz główną kobietę ze zdjęcia. Uwzględnij: kolor włosów, oczu, karnację i charakterystyczne cechy wyglądu.
-            #"""
-
-            response = OpenAIVService().get_completion(prompt, final_images, response_format="json_object")
-            response_json = json.loads(response)
-            self.logger.info(f"response_json:  {response_json}")
-
-            self.verify(response_json['description'],"/report")
-
-            # dla każdego obrazu, zdecyduj jaką akcję wykonać
-            # wykonaj akcję i pobierz zmienione zdjęcie
-            # przekaż wszystkie zdjęcia i pobierz rysopis kobiety
-
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            traceback.print_exc()
+        return response_json['description']
 
     @persistent_cache(__file__)
     def get_improved_images(self, image_functions):
