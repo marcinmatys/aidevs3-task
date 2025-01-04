@@ -14,16 +14,9 @@ base_url = os.getenv('CENTRALA_BASE_URL')
 api_key = os.getenv('API_KEY')
 
 
-
 class S04E03(BaseTask):
     def __init__(self):
         super().__init__(base_url,"softo")
-
-    def run2(self) -> Dict[str, Any]:
-
-        md = MarkItDown()
-        result = md.convert("https://softo.ag3nts.org/blog", extension="html")
-        self.logger.info(f"result \n {result.text_content}")
 
     def run(self) -> Dict[str, Any]:
 
