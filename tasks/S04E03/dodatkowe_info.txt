@@ -1,0 +1,7 @@
+Zapamiętuj w dowolnej formie linki już odwiedzone, aby uniknąć zapętlenia mechanizmu
+
+Na stronie mogą pojawić się 2-3 linki, które potencjalnie wyglądają, jakby mogły zawierać wartościowe dane.
+Nie wchodź w każdy z nich, a jedynie w ten najbardziej prawdopodobny.
+
+Możesz (ale nie musisz!) sporządzić mapę odwiedzonych stron i ich zawartości. Szukając odpowiedzi na pytanie nr 01,
+ prawdopodobnie odwiedzisz kilka stron. Czy szukając odpowiedzi na pytanie 02 i 03 naprawdę musisz odwiedzać je ponownie i znów wysyłać ich treść do LLM-a?
