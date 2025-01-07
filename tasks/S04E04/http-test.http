@@ -1,0 +1,17 @@
+
+###
+POST http://localhost:5000/map
+Content-Type: application/json
+
+{
+  "instruction":"Idziemy na sam dół mapy. Albo nie! nie! nie idziemy. Zaczynamy od nowa. W prawo maksymalnie idziemy. Co my tam mamy?"
+}
+
+###
+POST https://acf6-89-78-216-232.ngrok-free.app/map
+Content-Type: application/json
+
+{
+  "instruction":"Idziemy na sam dół mapy. Albo nie! nie! nie idziemy. Zaczynamy od nowa. W prawo maksymalnie idziemy. Co my tam mamy?"
+}
+
