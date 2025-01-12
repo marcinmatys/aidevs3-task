@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from typing import Union, Dict, Any
 from common.logger_config import setup_logger
+import json
 
 
 class TaskVerifier:
@@ -53,7 +54,9 @@ class TaskVerifier:
         except requests.exceptions.RequestException as e:
             error_msg = f"Błąd podczas wysyłania żądania: {str(e)}"
             self.logger.error(error_msg)
-            self.logger.error(f"error content: {response.content}")
+            decoded_content = response.content.decode('utf-8')
+            self.logger.error(f"error content: {decoded_content}")
+            return json.loads(decoded_content)
             #raise
         except ValueError as e:
             error_msg = f"Błąd podczas parsowania odpowiedzi: {str(e)}"
