@@ -59,6 +59,7 @@ class S05E01(BaseTask):
         return final_answer_plan
 
     def plan(self, question, usedTools):
+        # create xml like this <action name="" plan=""><result>answer here </result><action> AI!
         actions_xml = "".join(
             f"<action><tool>{tool['tool']}</tool><plan>{tool['plan']}</plan><answer>{tool['answer']}</answer></action>"
             for tool in usedTools
