@@ -11,6 +11,7 @@ import re
 import io
 import base64
 from common.cache import persistent_cache
+from common.zipUtil import ZipUtil
 
 load_dotenv()
 base_url = os.getenv('CENTRALA_BASE_URL')
@@ -30,6 +31,12 @@ class S05E01(BaseTask):
             questions = http_util.getData(f"/data/{api_key}/phone_questions.json")
             questions_json = json.loads(questions)
             self.logger.info(f"questions \n {questions_json}")
+
+            response = http_util.getData(f"/dane/pliki_z_fabryki.zip", ResponseType.CONTENT)
+            files = ZipUtil().extract_to_memory(response)
+            self.persons = self.get_persons_info(files)
+
+            #write get_sectors_info very similar to get_persons_info. Name of the sector is at the beginning of the description like "Sektor D" AI!
 
             answers = {}
             for key, value in questions_json.items():
@@ -60,9 +67,10 @@ class S05E01(BaseTask):
 
     def plan(self, question, usedTools):
         actions_xml = "".join(
-            f"<action name=\"{tool['tool']}\" plan=\"{tool['plan']}\"><result>{tool['answer']}</result></action>"
+            f"<action tool_name=\"{tool['tool']}\" plan=\"{tool['plan']}\"><result>{tool['answer']}</result></action>"
             for tool in usedTools
         )
+
         prompt = f"""
         Analyze the situation and determine the most appropriate next step.
         Focus on making progress towards answer the question while remaining adaptable to new information or changes in context.
@@ -105,3 +113,36 @@ class S05E01(BaseTask):
             "plan": "Precise description of what needs to be done, including any necessary context"
         }}
         """
+
+        response = OpenAIService().get_completion(prompt, response_format="json_object")
+        response_json = json.loads(response)
+        self.logger.info(f"plan: {response_json}")
+
+    @persistent_cache(__file__)
+    def get_persons_info(self, files) -> Dict[str,str] :
+
+        result = {}
+        for file_name, content in files.items():
+            if not (file_name.endswith(".txt") and file_name.startswith("facts/")):
+                continue
+
+            if isinstance(content, bytes):
+                content = content.decode('utf-8')
+
+            if content.startswith("Sektor"):
+                continue
+
+            prompt = f"""
+                Your task is to check who is below description about.
+                The name of the person is at the beginning of the description.
+                Return name surname or only name if surname not exists.
+                
+                <description>
+                {content}
+                </description>
+                """
+            name = OpenAIService().get_completion(prompt)
+            result[name.lower()] = content
+            self.logger.info(f"name from {file_name}: {name}")
+
+        return result
