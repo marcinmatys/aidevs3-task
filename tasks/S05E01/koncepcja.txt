@@ -1,0 +1,38 @@
+Wytyczne
+- 5 rozmów
+- podczas rozmowy padają sprzeczne informacje
+trzeba dowiedzieć się kto kłamie, wykluczyć jego informacje
+Aby się tego dowiedzieć, trzeba odwołać się do wiedzy ogólnej lub faktów.
+- jak mają na imię poszczególne osoby
+- jedno z pytań wymaga porozmawiania z api
+
+Wstępna koncepcja (w kodzie może być nieco inaczej):
+
+1. pobranie pytań
+2. przygotowanie faktów
+osoba: opis
+miejsce: opis
+3. przygotowanie toola do odczytania faktów dla zadanego klucza (osoba lub sektor)
+4. przygotowanie toola do odpytania endpointa
+5. przygotowanie toola do wysłania odpowiedzi
+
+6. Przygotowanie agenta
+- dać informację że jedna osoba kłamie, podaje sprzeczne informacje
+można to zweryfikować z wiedzy ogólnej lub z faktów
+- agenta ma odpowiedzieć na pytanie
+- agent ma w kontekście rozmowy
+- agent ma informacje na temat istnienia faktów o osobach i miejscach (sektorach)
+- agent ma toola do odczytania faktów na temat danej osoby lub sektora (param to nazwa osoby)
+- agent ma toola do odpytania api (endpoint i hasło)
+- agent ma toola do podania odpowiedzi co kończy prace agenta
+
+7. logika
+for each question
+  uruchomić agenta max 10 kroków
+    tool, plan: planowanie
+    no tool or final_answer: break
+    generate_params(tool, plan)
+    call tool
+
+ 8. generate_params(tool, plan)
+
