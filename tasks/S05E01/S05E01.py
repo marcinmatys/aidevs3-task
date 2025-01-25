@@ -36,7 +36,7 @@ class S05E01(BaseTask):
             files = ZipUtil().extract_to_memory(response)
             self.persons = self.get_persons_info(files)
 
-            #write get_sectors_info very similar to get_persons_info. Name of the sector is at the beginning of the description like "Sektor D" AI!
+            self.sectors = self.get_sectors_info(files)
 
             answers = {}
             for key, value in questions_json.items():
@@ -146,3 +146,29 @@ class S05E01(BaseTask):
             self.logger.info(f"name from {file_name}: {name}")
 
         return result
+
+    @persistent_cache(__file__)
+    def get_sectors_info(self, files) -> Dict[str, str]:
+        result = {}
+        for file_name, content in files.items():
+            if not (file_name.endswith(".txt") and file_name.startswith("facts/")):
+                continue
+
+            if isinstance(content, bytes):
+                content = content.decode('utf-8')
+
+            if not content.startswith("Sektor"):
+                continue
+
+            prompt = f"""
+                Your task is to check which sector is described below.
+                The name of the sector is at the beginning of the description.
+                Return the sector name.
+                
+                <description>
+                {content}
+                </description>
+                """
+            sector_name = OpenAIService().get_completion(prompt)
+            result[sector_name.lower()] = content
+            self.logger.info(f"sector from {file_name}: {sector_name}")
