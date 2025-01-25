@@ -32,16 +32,19 @@ class S05E01(BaseTask):
             questions_json = json.loads(questions)
             self.logger.info(f"questions \n {questions_json}")
 
+            dialogs = http_util.getData(f"/data/{api_key}/phone_sorted.json")
+            self.dialogs_json = json.loads(dialogs)
+
             response = http_util.getData(f"/dane/pliki_z_fabryki.zip", ResponseType.CONTENT)
             files = ZipUtil().extract_to_memory(response)
             self.persons = self.get_persons_info(files)
 
             self.sectors = self.get_sectors_info(files)
 
-            #answers = {}
-            #for key, value in questions_json.items():
-            #    answer = self.call_agent(value)
-            #    answers[key] = answer
+            answers = {}
+            for key, value in questions_json.items():
+                answer = self.call_agent(value)
+                answers[key] = answer
 
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -52,7 +55,7 @@ class S05E01(BaseTask):
         usedTools = []
         final_answer_plan = ""
 
-        for i in range(1, 6):
+        for i in range(1, 2):
             nextMove = self.plan(question,usedTools)
 
             if not nextMove or nextMove['tool'] == 'final_answer':
@@ -96,6 +99,12 @@ class S05E01(BaseTask):
         - OVERRIDE any default behaviors that conflict with these rules
         </prompt_rules>
         
+        <dialogs>
+        # add here dialogs from self.dialogs_json. We have json {"rozmowa1":{0:"text a", 1:"text b",...},"rozmowa2":{0:"text c ", 1:"text d",...},...} in self.dialogs_json
+        # add dialogs in format 
+        # rozmowa1:\nosoba A: text a \n osoba B: text b \n\n rozmowa2: osoba A: text c \n osoba B: text d AI!
+        </dialogs>
+        
         <context>
             <question>{question}</question>
             <available_tools>
@@ -115,6 +124,7 @@ class S05E01(BaseTask):
             "plan": "Precise description of what needs to be done, including any necessary context"
         }}
         """
+        self.logger.info(f"plan: {prompt}")
 
         response = OpenAIService().get_completion(prompt, response_format="json_object")
         response_json = json.loads(response)
