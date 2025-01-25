@@ -149,6 +149,7 @@ class S05E01(BaseTask):
 
     @persistent_cache(__file__)
     def get_sectors_info(self, files) -> Dict[str, str]:
+
         result = {}
         for file_name, content in files.items():
             if not (file_name.endswith(".txt") and file_name.startswith("facts/")):
@@ -160,6 +161,8 @@ class S05E01(BaseTask):
             if not content.startswith("Sektor"):
                 continue
 
+            #actually we do not need llm for this, write simple code to get "Sektor X" from description beggining with phrase "Sektor X "
+            #example content is "Sektor D jest bardzo ładny", so get "Sektor D" and put in result Dict AI!
             prompt = f"""
                 Your task is to check which sector is described below.
                 The name of the sector is at the beginning of the description.
