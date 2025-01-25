@@ -97,7 +97,7 @@ class S05E01(BaseTask):
         <context>
             <question>{question}</question>
             <available_tools>
-            1. tool_name: 'get_facts', tool_description: 'get facts about person or sector', tool_note: 'Facts are available only for: {facts_note}' # add as facts_note keys from self.persons and self.sectors AI!
+            1. tool_name: 'get_facts', tool_description: 'get facts about person or sector', tool_note: 'Facts are available only for: {', '.join(self.persons.keys())}, {', '.join(self.sectors.keys())}'
             2. tool_name: 'call_endpoint', tool_description: 'call endpoint for specified url and password'
             3. tool_name: 'final_answer', tool_description: 'final answer for question'
             </available_tools>
