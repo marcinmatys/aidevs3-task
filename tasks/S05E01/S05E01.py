@@ -38,10 +38,10 @@ class S05E01(BaseTask):
 
             self.sectors = self.get_sectors_info(files)
 
-            answers = {}
-            for key, value in questions_json.items():
-                answer = self.call_agent(value)
-                answers[key] = answer
+            #answers = {}
+            #for key, value in questions_json.items():
+            #    answer = self.call_agent(value)
+            #    answers[key] = answer
 
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -97,7 +97,7 @@ class S05E01(BaseTask):
         <context>
             <question>{question}</question>
             <available_tools>
-            1. tool_name: 'get_facts', tool_description: 'get facts about person or sector', tool_note: 'Facts are available only for: {facts_note}'
+            1. tool_name: 'get_facts', tool_description: 'get facts about person or sector', tool_note: 'Facts are available only for: {facts_note}' # add as facts_note keys from self.persons and self.sectors AI!
             2. tool_name: 'call_endpoint', tool_description: 'call endpoint for specified url and password'
             3. tool_name: 'final_answer', tool_description: 'final answer for question'
             </available_tools>
@@ -142,7 +142,7 @@ class S05E01(BaseTask):
                 </description>
                 """
             name = OpenAIService().get_completion(prompt)
-            result[name.lower()] = content
+            result[name] = content
             self.logger.info(f"name from {file_name}: {name}")
 
         return result
@@ -165,5 +165,7 @@ class S05E01(BaseTask):
             match = re.match(r"(Sektor \w+)", content)
             if match:
                 sector_name = match.group(1)
-                result[sector_name.lower()] = content
+                result[sector_name] = content
                 self.logger.info(f"sector from {file_name}: {sector_name}")
+
+        return result
