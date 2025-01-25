@@ -59,7 +59,7 @@ class S05E01(BaseTask):
         return final_answer_plan
 
     def plan(self, question, usedTools):
-
+        # create xml actions in actions_taken based on usedTools AI!
         prompt = f"""
         Analyze the situation and determine the most appropriate next step.
         Focus on making progress towards answer the question while remaining adaptable to new information or changes in context.
@@ -91,7 +91,7 @@ class S05E01(BaseTask):
             3. tool_name: 'final_answer', tool_description: 'final answer for question'
             </available_tools>
             <actions_taken>
-            
+             
             </actions_taken>
         </context>
         
