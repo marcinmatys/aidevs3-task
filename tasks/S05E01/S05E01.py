@@ -66,6 +66,8 @@ class S05E01(BaseTask):
         return final_answer_plan
 
     def plan(self, question, usedTools):
+        tool_note = f"Facts are available only for: {', '.join(self.persons.keys())}, {', '.join(self.sectors.keys())}"
+        
         actions_xml = "".join(
             f"<action tool_name=\"{tool['tool']}\" plan=\"{tool['plan']}\"><result>{tool['answer']}</result></action>"
             for tool in usedTools
@@ -97,7 +99,7 @@ class S05E01(BaseTask):
         <context>
             <question>{question}</question>
             <available_tools>
-            1. tool_name: 'get_facts', tool_description: 'get facts about person or sector', tool_note: 'Facts are available only for: {', '.join(self.persons.keys())}, {', '.join(self.sectors.keys())}' # extract to variable AI!
+            1. tool_name: 'get_facts', tool_description: 'get facts about person or sector', tool_note: '{tool_note}'
             2. tool_name: 'call_endpoint', tool_description: 'call endpoint for specified url and password'
             3. tool_name: 'final_answer', tool_description: 'final answer for question'
             </available_tools>
