@@ -76,10 +76,9 @@ class S05E01(BaseTask):
             for tool in usedTools
         )
 
-        # dialog_content is array , correct AI!
         dialogs_str = ""
         for dialog_name, dialog_content in self.dialogs_json.items():
-            dialog_lines = [f"osoba A: {text}" if i % 2 == 0 else f"osoba B: {text}" for i, text in dialog_content.items()]
+            dialog_lines = [f"osoba A: {text}" if i % 2 == 0 else f"osoba B: {text}" for i, text in enumerate(dialog_content)]
             dialogs_str += f"{dialog_name}:\n" + "\n".join(dialog_lines) + "\n\n"
 
         prompt = f"""
