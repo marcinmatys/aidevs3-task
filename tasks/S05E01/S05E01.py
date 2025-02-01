@@ -76,6 +76,11 @@ class S05E01(BaseTask):
             for tool in usedTools
         )
 
+        # Make changes described below AI!
+        # prepare string for below dialogs section from self.dialogs_json.
+        # We have json {"rozmowa1":{0:"text a", 1:"text b",...},"rozmowa2":{0:"text c ", 1:"text d",...},...} in self.dialogs_json
+        # prepare string in format rozmowa1:\nosoba A: text a \n osoba B: text b \n\n rozmowa2: osoba A: text c \n osoba B: text d
+
         prompt = f"""
         Analyze the situation and determine the most appropriate next step.
         Focus on making progress towards answer the question while remaining adaptable to new information or changes in context.
@@ -100,9 +105,7 @@ class S05E01(BaseTask):
         </prompt_rules>
         
         <dialogs>
-        # add here dialogs from self.dialogs_json. We have json {"rozmowa1":{0:"text a", 1:"text b",...},"rozmowa2":{0:"text c ", 1:"text d",...},...} in self.dialogs_json
-        # add dialogs in format 
-        # rozmowa1:\nosoba A: text a \n osoba B: text b \n\n rozmowa2: osoba A: text c \n osoba B: text d AI!
+
         </dialogs>
         
         <context>
