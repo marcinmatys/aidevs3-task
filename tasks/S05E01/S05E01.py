@@ -111,7 +111,7 @@ class S05E01(BaseTask):
         <context>
             <question>{question}</question>
             <available_tools>
-            1. tool_name: 'get_facts', tool_description: 'get facts about person or sector', tool_note: '{tool_note}'
+            1. tool_name: 'get_facts', tool_description: 'get facts about one selected person or sector', tool_note: '{tool_note}'
             2. tool_name: 'call_endpoint', tool_description: 'call endpoint for specified url and password'
             3. tool_name: 'final_answer', tool_description: 'final answer for question'
             </available_tools>
@@ -132,6 +132,7 @@ class S05E01(BaseTask):
         response = OpenAIService().get_completion(prompt, response_format="json_object")
         response_json = json.loads(response)
         self.logger.info(f"plan: {response_json}")
+        return response_json
 
     @persistent_cache(__file__)
     def get_persons_info(self, files) -> Dict[str,str] :

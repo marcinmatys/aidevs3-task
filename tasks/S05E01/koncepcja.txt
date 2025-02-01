@@ -25,6 +25,7 @@ można to zweryfikować z wiedzy ogólnej lub z faktów
 - agent ma toola do odczytania faktów na temat danej osoby lub sektora (param to nazwa osoby)
 - agent ma toola do odpytania api (endpoint i hasło)
 - agent ma toola do podania odpowiedzi co kończy prace agenta
+- poprawna odpowiedz na pytanie dodjemy do kontekstu dla kolejnych pytań
 
 7. logika
 for each question
