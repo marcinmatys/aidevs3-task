@@ -81,6 +81,7 @@ class S05E01(BaseTask):
             dialog_lines = [f"osoba A: {text}" if i % 2 == 0 else f"osoba B: {text}" for i, text in dialog_content.items()]
             dialogs_str += f"{dialog_name}:\n" + "\n".join(dialog_lines) + "\n\n"
 
+        # add dialogs_str in below dialogs section AI!
         prompt = f"""
         Analyze the situation and determine the most appropriate next step.
         Focus on making progress towards answer the question while remaining adaptable to new information or changes in context.
