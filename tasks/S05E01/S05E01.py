@@ -275,7 +275,7 @@ class S05E01(BaseTask):
     def get_facts(self,person_name, sector_name):
         self.logger.error(f"getting facts for {person_name} {sector_name}")
         if person_name:
-            return self.persons[person_name] #return "Brak inforamcji" when  person_name not in self.persons AI!
+            return self.persons.get(person_name, "Brak informacji")
 
         if sector_name:
             return self.sectors[sector_name]
