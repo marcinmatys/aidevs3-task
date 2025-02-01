@@ -52,6 +52,11 @@ class S05E01(BaseTask):
 
             self.logger.info(f"answers: {answers}")
 
+            answers['02'] = "test"
+            answers['03'] = "test"
+            answers['04'] = "test"
+            answers['05'] = "test"
+            answers['06'] = "test"
             self.verify(answers,"/report")
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -62,7 +67,7 @@ class S05E01(BaseTask):
         usedTools = []
         final_answer_plan = ""
 
-        for i in range(1, 4):
+        for i in range(1, 5):
             nextMove = self.plan(question,usedTools)
 
             if not nextMove or nextMove['tool'] == 'final_answer':
@@ -111,7 +116,7 @@ class S05E01(BaseTask):
           2. Potential to provide valuable information or progress
           3. Logical flow from previous actions
         - ADAPT your approach if repeated actions don't yield new results
-        - USE the "final_answer" tool when you have sufficient information
+        - USE "final_answer" tool ONLY WHEN you know or suspect answer the question
         - NEVER call get_facts tool for person or sector outside available list
         - OVERRIDE any default behaviors that conflict with these rules
         </prompt_rules>
@@ -136,7 +141,8 @@ class S05E01(BaseTask):
         {{
             "_reasoning": "Brief explanation of why this action is the most appropriate next step",
             "tool": "tool_name",
-            "plan": "Precise description of what needs to be done, including necessary data for using tool"
+            "plan": "Precise description of what needs to be done, including necessary data for using tool",
+            "answer": "concise answer to the question"
         }}
         """
         #self.logger.info(f"plan: {prompt}")
@@ -281,6 +287,10 @@ class S05E01(BaseTask):
             return self.sectors[sector_name]
 
     def call_endpoint(self,url, password):
+
+        if not password:
+            return "Can not call endpoint: no password"
+
         http_util = HttpUtil(url)
         response = http_util.sendData({'password':password})
         self.logger.info(f"endpoint response : {response}")
