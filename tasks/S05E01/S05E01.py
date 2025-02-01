@@ -76,10 +76,10 @@ class S05E01(BaseTask):
             for tool in usedTools
         )
 
-        # Make changes described below AI!
-        # prepare string for below dialogs section from self.dialogs_json.
-        # We have json {"rozmowa1":{0:"text a", 1:"text b",...},"rozmowa2":{0:"text c ", 1:"text d",...},...} in self.dialogs_json
-        # prepare string in format rozmowa1:\nosoba A: text a \n osoba B: text b \n\n rozmowa2: osoba A: text c \n osoba B: text d
+        dialogs_str = ""
+        for dialog_name, dialog_content in self.dialogs_json.items():
+            dialog_lines = [f"osoba A: {text}" if i % 2 == 0 else f"osoba B: {text}" for i, text in dialog_content.items()]
+            dialogs_str += f"{dialog_name}:\n" + "\n".join(dialog_lines) + "\n\n"
 
         prompt = f"""
         Analyze the situation and determine the most appropriate next step.
