@@ -76,6 +76,7 @@ class S05E01(BaseTask):
             for tool in usedTools
         )
 
+        # dialog_content is array , correct AI!
         dialogs_str = ""
         for dialog_name, dialog_content in self.dialogs_json.items():
             dialog_lines = [f"osoba A: {text}" if i % 2 == 0 else f"osoba B: {text}" for i, text in dialog_content.items()]
@@ -105,7 +106,7 @@ class S05E01(BaseTask):
         </prompt_rules>
         
         <dialogs>
-
+        {dialogs_str}
         </dialogs>
         
         <context>
